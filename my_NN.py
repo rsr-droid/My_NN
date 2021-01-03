@@ -24,6 +24,9 @@ def plot(xfeature_name, yfeature_name, xfeature, yfeature, ori_label, re_label):
     for i, j, color in zip(xfeature, yfeature, re_label):
         plt.scatter(i, j, c=relbl_color[color], marker='o', s=50, edgecolor='k',cmap=plt.cm.Spectral)
 
+"""
+Design NN Model
+"""
 
 class my_NN(object):
     def __init__(self):
@@ -99,3 +102,44 @@ class my_NN(object):
         # compute accuracy of prediction model
         cnt = np.sum(predict==y)
         return (cnt/len(y))*100
+    
+    
+if __name__=='__main__':
+    import argparse
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--show',
+                        default='False',
+                        help='show dataset')
+    parser.add_argument('--train',
+                        default='False',
+                        help='setting iteration number')
+    args = parser.parse_args()
+    
+    # Dataset
+    iris = datasets.load_iris()
+    X = iris.data # features, 'sepal length (cm)', 'sepal width (cm)', 'petal length (cm)', 'petal width (cm)'
+    y = iris.target # label, 'setosa' 'versicolor' 'virginica'
+
+    #For convenience’s sake, we convert this problem into 
+    #Binary Classification Problem by relabeling iris dataset — 1: Setosa, 0: not Setosa.
+    re_y = np.array([1 if i==0 else 0 for i in y]) # relabel, 'setosa':1, 'not setosa':0
+    
+    # Spliting training data and testing data
+    train_X, test_X, train_y, test_y = train_test_split(X, re_y, random_state=4, test_size=0.25)
+    
+    if args.train=="True":
+        # Making Model
+        input_units = train_X.shape[1]
+        output_units = 1
+        hidden_units = 6
+        clr = my_NN(input_units, output_units, hidden_units) #initialize
+        clr.train(train_X, train_y) # train model
+        pre_y = clr.predict(test_X) # predict
+        score = clr.score(pre_y, test_y) # get the accuracy score
+        print('score: ', score)
+    
+    if args.show=="True":
+        plot('sepal length(cm)', 'sepal width(cm)', X[:, 0], X[:, 1], y, re_y)
+        plot('petal length(cm)', 'petal width(cm)', X[:, 2], X[:, 3], y, re_y)
+        plt.show() 
